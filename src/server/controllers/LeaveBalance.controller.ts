@@ -20,8 +20,7 @@ export class LeaveBalanceController {
         });
 
         if (!employee) {
-          res.status(404).json({ error: 'Employee not found' });
-          return;
+          return res.status(404).json({ error: 'Employee not found' });
         }
 
         const leaveDays = Math.round((employee.contractHours / 40) * 25); //* Pro rata calculation - e.g., 25 days for full-time
@@ -72,10 +71,10 @@ export class LeaveBalanceController {
         remainingDays: balance.totalDays - usedDays,
         remainingHours: balance.totalHours - usedHours,
       };
-      res.json(updatedBalance);
+      return res.json(updatedBalance);
     } catch (err) {
       console.error('Error fetching leave balance:', err);
+      return res.status(500).json({ error: 'Internal server error' });
     }
-    res.status(500).json({ error: 'Internal server error' });
   }
 }
