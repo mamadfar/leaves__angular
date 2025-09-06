@@ -1,0 +1,267 @@
+<!-- Todo: Breakdown to multiple components -->
+
+<div class="min-h-screen bg-gray-50">
+    <!--* Header -->
+    <header class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <h1 class="text-3xl font-bold text-gray-900">KLM Leaves</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <select [(ngModel)]="selectedEmployeeId" (change)="onEmployeeChange()"
+                        class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select Employee</option>
+                        @for (emp of employees(); track emp.employeeId) {
+                        <option [value]="emp.employeeId">{{emp.name}} ({{emp.employeeId}})</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    @if (selectedEmployee()) {
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!--* Employee Info -->
+        <div class="px-4 py-6 sm:px-0">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg leading-6 font-medium text-gray-900">
+                                {{selectedEmployee()?.name}}
+                            </h2>
+                            <p class="mt-1 text-sm text-gray-500">
+                                Employee ID: {{selectedEmployee()?.employeeId}}
+                                @if (selectedEmployee()?.isManager) {
+                                <span
+                                    class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Manager
+                                </span>
+                                }
+                            </p>
+                            @if (selectedEmployee()?.manager) {
+                            <p class="mt-1 text-sm text-gray-500">
+                                Reports to: {{selectedEmployee()?.manager?.name}}
+                            </p>
+                            }
+                        </div>
+                        <button (click)="showCreateLeaveForm = true"
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Request Leave
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--* Leave Balance -->
+        @if (leaveBalance()) {
+        <div class="px-4 py-6 sm:px-0">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Leave Balance {{leaveBalance()?.year}}
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <div class="text-2xl font-semibold text-blue-900">{{leaveBalance()?.totalDays}}</div>
+                            <div class="text-sm text-blue-600">Total Days</div>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <div class="text-2xl font-semibold text-green-900">{{leaveBalance()?.remainingDays}}</div>
+                            <div class="text-sm text-green-600">Remaining Days</div>
+                        </div>
+                        <div class="bg-orange-50 p-4 rounded-lg">
+                            <div class="text-2xl font-semibold text-orange-900">{{leaveBalance()?.usedDays}}</div>
+                            <div class="text-sm text-orange-600">Used Days</div>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <div class="text-2xl font-semibold text-purple-900">{{leaveBalance()?.remainingHours}}</div>
+                            <div class="text-sm text-purple-600">Remaining Hours</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!--* My Leaves -->
+        <div class="px-4 py-6 sm:px-0">
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">My Leave Requests</h3>
+                    @if (myLeaves().length === 0) {
+                    <p class="text-gray-500 text-center py-8">No leave requests found.</p>
+                    } @else {
+                    <div class="overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Leave</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Dates</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @for (leave of myLeaves(); track leave.leaveId) {
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{leave.leaveLabel}}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            {{formatDate(leave.startOfLeave)}} - {{formatDate(leave.endOfLeave)}}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span [class]="getStatusClass(leave.status)"
+                                            class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
+                                            {{leave.status}}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        @if (canDeleteLeave(leave)) {
+                                        <button (click)="deleteLeave(leave.leaveId)"
+                                            class="text-red-600 hover:text-red-900">
+                                            Cancel
+                                        </button>
+                                        }
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!--* Manager Section -->
+        @if (selectedEmployee()?.isManager && subordinateLeaves().length > 0) {
+        <div class="px-4 py-6 sm:px-0">
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Team Leave Requests</h3>
+                    <div class="overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Employee</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Leave</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Dates</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @for (leave of subordinateLeaves(); track leave.leaveId) {
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{leave.employee?.name}}</div>
+                                        <div class="text-sm text-gray-500">{{leave.employee?.employeeId}}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{leave.leaveLabel}}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            {{formatDate(leave.startOfLeave)}} - {{formatDate(leave.endOfLeave)}}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span [class]="getStatusClass(leave.status)"
+                                            class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
+                                            {{leave.status}}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                        @if (leave.status === 'REQUESTED') {
+                                        <button (click)="approveLeave(leave.leaveId)"
+                                            class="text-green-600 hover:text-green-900">
+                                            Approve
+                                        </button>
+                                        <button (click)="rejectLeave(leave.leaveId)"
+                                            class="text-red-600 hover:text-red-900">
+                                            Reject
+                                        </button>
+                                        }
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+    </main>
+    } @else {
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold text-gray-900">Welcome to KLM Leaves</h2>
+            <p class="mt-4 text-lg text-gray-500">Please select an employee to view their leave information.</p>
+        </div>
+    </div>
+    }
+
+    <!--* Create Leave Modal -->
+    @if (showCreateLeaveForm) {
+    <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Request New Leave</h3>
+                <form (ngSubmit)="createLeave()" #leaveForm="ngForm">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Leave Description</label>
+                        <input type="text" [(ngModel)]="newLeave.leaveLabel" name="leaveLabel" required
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            placeholder="e.g., Summer vacation">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                        <input type="datetime-local" [(ngModel)]="newLeave.startOfLeave" name="startOfLeave" required
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                        <input type="datetime-local" [(ngModel)]="newLeave.endOfLeave" name="endOfLeave" required
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" (click)="showCreateLeaveForm = false; resetForm()"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300">
+                            Cancel
+                        </button>
+                        <button type="submit" [disabled]="!leaveForm.valid"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
+                            Submit Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    }
+</div>

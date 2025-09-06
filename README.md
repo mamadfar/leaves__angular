@@ -1,59 +1,205 @@
-# Leaves
+## Setup Instructions
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.2.
+### Prerequisites
 
-## Development server
+- Node.js (v18 or higher)
+- npm or yarn or pnpm
 
-To start a local development server, run:
+### Installation
+
+1. **Clone and install dependencies**
+
+   ```bash
+   git clone <repository-url>
+   cd leaves
+   npm install
+   ```
+
+2. **Environment Setup**
+
+   Create a `.env` file in the project root:
+
+   ```env
+   # Database
+   DATABASE_URL="file:./dev.db"
+
+   # Server
+   PORT=4000
+   ```
+
+### Database Setup
+
+3. **Generate Prisma Client**
+
+   ```bash
+   npm run db:generate
+   ```
+
+4. **Push Database Schema**
+
+   ```bash
+   npm run db:push
+   ```
+
+5. **Seed the Database**
+
+   ```bash
+   npm run db:seed
+   ```
+
+   This will create:
+
+   - 5 employees (2 managers, 3 regular employees)
+   - Leave balances for all employees
+   - 2 sample leave requests
+
+### Viewing Database Data
+
+#### Option 1: Prisma Studio (Recommended)
 
 ```bash
-ng serve
+npm run db:studio
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Opens web interface at `http://localhost:5555`
+- Visual database browser and editor
+- Shows table relationships
+- Allows data editing
 
-## Code scaffolding
+#### Option 2: Traditional SQLite Tools
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+**Using DB Browser for SQLite:**
+
+1. Download [DB Browser for SQLite](https://sqlitebrowser.org/)
+2. Open file: `prisma/dev.db`
+3. Browse and query your data
+
+**Using SQLite Command Line:**
 
 ```bash
-ng generate component component-name
+# Navigate to project directory
+\leaves
+
+# Open SQLite CLI
+sqlite3 prisma/dev.db
+
+# View tables
+.tables
+
+# Query data
+SELECT * FROM employees;
+SELECT * FROM leaves;
+SELECT * FROM leave_balances;
+
+# Exit
+.exit
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### Running the Application
+
+6. **Build the application**
+
+   ```bash
+   npm run build
+   ```
+
+7. **Start the server**
+
+   ```bash
+   npm run serve:ssr:leaves
+   ```
+
+   The application will be available at `http://localhost:4000`
+
+## API Endpoints
+
+### Employee Endpoints
+
+- `GET /api/employees` - Get all employees
+- `GET /api/employees/:employeeId` - Get specific employee
+- `POST /api/employees` - Create new employee
+- `GET /api/employees/:employeeId/subordinates` - Get employee's subordinates
+
+### Leave Endpoints
+
+- `GET /api/employees/:employeeId/leaves` - Get employee's leaves
+- `GET /api/managers/:managerId/leaves` - Get leaves for manager's subordinates
+- `POST /api/leaves` - Create new leave request
+- `PATCH /api/leaves/:leaveId/status` - Update leave status (approve/reject)
+- `DELETE /api/leaves/:leaveId` - Delete leave request
+
+### Leave Balance Endpoints
+
+- `GET /api/employees/:employeeId/balance` - Get employee's leave balance
+
+## User Stories Implemented
+
+✅ **As an employee I want to view my requested (planned) leaves including the (approval) status**
+✅ **As an employee I want to view my remaining leave days and hours**
+✅ **As an employee I want to request a new leave**
+✅ **As an employee I want to cancel (delete) an existing, future leave**
+✅ **As a manager I want to approve the leaves requested by my employees**
+✅ **As a security officer I want employees to only be allowed to view and manage their own leaves. Except for managers who can also view and approve the leaves of their employees**
+
+## Development Commands
 
 ```bash
-ng generate --help
+# Database commands
+npm run db:generate    # Generate Prisma client
+npm run db:push        # Push schema to database
+npm run db:migrate     # Create migration
+npm run db:studio      # Open Prisma Studio
+npm run db:seed        # Seed database with sample data
+
+# Application commands
+npm start              # Development server
+npm run build          # Build for production
+npm run serve:ssr:leaves # Serve production build
+npm test               # Run tests
 ```
 
-## Building
+## Database Schema Details
 
-To build the project run:
+The application uses three main tables:
 
-```bash
-ng build
+- **employees**: User accounts with hierarchical manager relationships
+- **leaves**: Leave requests with approval workflow
+- **leave_balances**: Annual leave entitlements and usage tracking
+
+## Sample Data
+
+After seeding, you'll have:
+
+**Managers:**
+
+- K000001 - John Manager
+- K000002 - Sarah Director
+
+**Employees:**
+
+- K012345 - Alice Johnson (reports to John Manager)
+- K012346 - Bob Smith (reports to John Manager)
+- K012347 - Carol Davis (reports to Sarah Director)
+
+**Sample Leaves:**
+
+- Alice's approved summer vacation
+- Bob's pending Christmas break request
+
+## File Structure
+
 ```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
+leaves/
+├── prisma/
+│   ├── schema.prisma          # Database schema
+│   ├── seed.ts               # Database seed file
+│   └── dev.db                # SQLite database file
+├── src/
+│   ├── app/                  # Angular frontend
+│   └── server/               # Express backend
+│       ├── controllers/      # API controllers
+│       ├── services/         # Business logic
+│       └── routes/           # API routes
+├── package.json
+└── README.md
 ```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

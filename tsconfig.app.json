@@ -3,15 +3,19 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "baseUrl": "./",
     "outDir": "./out-tsc/app",
-    "types": ["node"]
+    "types": ["node"],
+    //* alias
+    "paths": {
+      "$app/*": ["src/app/*"],
+      "$assets/*": ["src/assets/*"],
+      "$environments/*": ["src/environments/*"],
+      "$types/*": ["src/types/*"],
+      "$services/*": ["src/app/services/*"],
+      "$components/*": ["src/app/components/*"]
+    }
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.spec.ts"],
-  // alias
-  "paths": {
-    "@app/*": ["src/app/*"],
-    "@assets/*": ["src/assets/*"],
-    "@environments/*": ["src/environments/*"]
-  }
+  "exclude": ["src/**/*.spec.ts"]
 }

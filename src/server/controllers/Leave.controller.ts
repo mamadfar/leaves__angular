@@ -34,7 +34,7 @@ export class LeaveController {
         where: { managerId },
         select: { employeeId: true },
       });
-      const subordinateIds = subordinates.map((sub) => sub.employeeId);
+      const subordinateIds = subordinates.map((sub: any) => sub.employeeId);
 
       const leaves = await prisma.leave.findMany({
         where: { employeeId: { in: subordinateIds } },

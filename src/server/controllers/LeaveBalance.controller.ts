@@ -7,7 +7,7 @@ export class LeaveBalanceController {
     try {
       const { employeeId } = req.params;
 
-      const year = parseInt(req.query.year as string) || new Date().getFullYear();
+      const year = parseInt(req.query['year'] as string) || new Date().getFullYear();
 
       let balance = await prisma.leaveBalance.findUnique({
         where: { employeeId_year: { employeeId, year } },
@@ -48,7 +48,7 @@ export class LeaveBalanceController {
         },
       });
       let usedHours = 0;
-      approvedLeaves.forEach((leave) => {
+      approvedLeaves.forEach((leave: any) => {
         const start = new Date(leave.startOfLeave);
         const end = new Date(leave.endOfLeave);
         const diffTime = Math.abs(end.getTime() - start.getTime());
