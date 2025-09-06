@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  employeeId    String   @id //* K012345 format - PK
+  name          String
+  managerId     String? //* Manager's employeeId - FK to Employee
+  contractHours Int      @default(40) //* weekly
+  isManager     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  //* Relations
+  manager        Employee?     @relation("ManagerEmployee", fields: [managerId], references: [employeeId])
+  subordinates   Employee[]    @relation("ManagerEmployee")
+  leaves         Leave[]
+  approvedLeaves Leave[]       @relation("ApproverLeaves")
+  LeaveBalance   LeaveBalance?
+
+  @@map("employees")
+}
+
+model Leave {
+  leaveId      String      @id @default(uuid())
+  leaveLabel   String //* e.g., "Annual Leave", "Sick Leave"
+  employeeId   String //* FK to Employee
+  startOfLeave DateTime
+  endOfLeave   DateTime
+  approverId   String? //* FK to
+  status       LeaveStatus @default(REQUESTED)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  //* Relations
+  employee Employee  @relation(fields: [employeeId], references: [employeeId])
+  approver Employee? @relation("ApproverLeaves", fields: [approverId], references: [employeeId])
+
+  @@map("leaves")
+}
+
+model LeaveBalance {
+  id         Int      @id @default(autoincrement())
+  employeeId String   @unique //* FK to Employee
+  year       Int
+  totalDays  Int      @default(25) //* e.g., 25 days per year
+  totalHours Int      @default(200) //* e.g., 200 hours per year - 25 days * 8 hours
+  usedDays   Int      @default(0)
+  usedHours  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  //* Relations
+  employee Employee @relation(fields: [employeeId], references: [employeeId])
+
+  @@unique([employeeId, year])
+  @@map("leave_balances")
+}
+
+enum LeaveStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  CANCELLED
+  CLOSED
+}

@@ -7,7 +7,12 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:leaves": "node dist/leaves/server/server.mjs"
+    "serve:ssr:leaves": "node dist/leaves/server/server.mjs",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts"
   },
   "prettier": {
     "printWidth": 100,
@@ -31,8 +36,12 @@
     "@angular/platform-server": "^20.2.0",
     "@angular/router": "^20.2.0",
     "@angular/ssr": "^20.2.2",
+    "@prisma/client": "^6.15.0",
+    "@types/sqlite3": "^5.1.0",
+    "axios": "^1.11.0",
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
+    "sqlite3": "^5.1.7",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
@@ -48,6 +57,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "prisma": "^6.15.0",
     "typescript": "~5.9.2"
   }
 }
