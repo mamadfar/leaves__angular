@@ -132,15 +132,6 @@ SELECT * FROM leave_balances;
 
 - `GET /api/employees/:employeeId/balance` - Get employee's leave balance
 
-## User Stories Implemented
-
-✅ **As an employee I want to view my requested (planned) leaves including the (approval) status**
-✅ **As an employee I want to view my remaining leave days and hours**
-✅ **As an employee I want to request a new leave**
-✅ **As an employee I want to cancel (delete) an existing, future leave**
-✅ **As a manager I want to approve the leaves requested by my employees**
-✅ **As a security officer I want employees to only be allowed to view and manage their own leaves. Except for managers who can also view and approve the leaves of their employees**
-
 ## Development Commands
 
 ```bash
@@ -172,14 +163,14 @@ After seeding, you'll have:
 
 **Managers:**
 
-- K000001 - John Manager
-- K000002 - Sarah Director
+- K000001 - Velthoven Jeroen-van
+- K000002 - Eszter Nasz
 
 **Employees:**
 
-- K012345 - Alice Johnson (reports to John Manager)
-- K012346 - Bob Smith (reports to John Manager)
-- K012347 - Carol Davis (reports to Sarah Director)
+- K012345 - Mohammad Farhadi (reports to Velthoven Jeroen-van)
+- K012346 - Bertold Oravecz (reports to Velthoven Jeroen-van)
+- K012347 - Carol Davis (reports to Eszter Nasz)
 
 **Sample Leaves:**
 
