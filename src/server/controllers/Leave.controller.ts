@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../services/prisma.service';
-import { LeaveStatus } from '../../../generated/prisma';
+import { LeaveStatus, LeaveType, SpecialLeaveType } from '../../../generated/prisma/enums';
+import { LeaveBusinessRulesService } from '../services/leave-business-rules.service';
 
 export class LeaveController {
   static async getEmployeeLeaves(req: Request, res: Response) {
@@ -63,27 +64,53 @@ export class LeaveController {
 
   static async createLeave(req: Request, res: Response): Promise<void> {
     try {
-      const { leaveLabel, employeeId, startOfLeave, endOfLeave } = req.body;
+      const {
+        leaveLabel,
+        employeeId,
+        startOfLeave,
+        endOfLeave,
+        leaveType = LeaveType.REGULAR,
+        specialLeaveType,
+      } = req.body;
 
       if (!leaveLabel || !employeeId || !startOfLeave || !endOfLeave) {
-        res.status(400).json({ error: 'All fields are required' });
+        res.status(400).json({ error: 'All required fields must be provided' });
         return;
       }
+
       const startDate = new Date(startOfLeave);
       const endDate = new Date(endOfLeave);
 
-      //* Validate dates -----------------
-      if (startDate >= endDate) {
-        res.status(400).json({ error: 'End date must be after start date' });
+      // Get employee information
+      const employee = await prisma.employee.findUnique({
+        where: { employeeId },
+        select: { managerId: true, contractHours: true },
+      });
+
+      if (!employee) {
+        res.status(404).json({ error: 'Employee not found' });
         return;
       }
 
-      if (startDate < new Date()) {
-        res.status(400).json({ error: 'Cannot create leave in the past' });
+      // Validate business rules
+      const validation = LeaveBusinessRulesService.validateLeaveRequest({
+        startOfLeave: startDate,
+        endOfLeave: endDate,
+        leaveType,
+        specialLeaveType,
+        employeeId,
+        contractHours: employee.contractHours,
+      });
+
+      if (!validation.isValid) {
+        res.status(400).json({
+          error: 'Leave request violates business rules',
+          details: validation.errors,
+        });
         return;
       }
 
-      //* Check for overlapping leaves -----------------
+      // Check for overlapping leaves
       const overlappingLeaves = await prisma.leave.findMany({
         where: {
           employeeId,
@@ -107,19 +134,91 @@ export class LeaveController {
         return;
       }
 
-      //* Get employee's manager for approval -----------------
-      const employee = await prisma.employee.findUnique({
-        where: { employeeId },
-        select: { managerId: true },
-      });
+      // Calculate total hours for the leave
+      const totalHours = LeaveBusinessRulesService.calculateWorkingHours(startDate, endDate);
 
+      // For special leaves, check against usage limits
+      if (leaveType === LeaveType.SPECIAL && specialLeaveType) {
+        const currentYear = startDate.getFullYear();
+        const limits = LeaveBusinessRulesService.getSpecialLeaveLimit(
+          specialLeaveType,
+          employee.contractHours
+        );
+
+        // Get current usage
+        const currentUsage = await prisma.specialLeaveUsage.findUnique({
+          where: {
+            employeeId_year_specialLeaveType: {
+              employeeId,
+              year: currentYear,
+              specialLeaveType,
+            },
+          },
+        });
+
+        const currentUsedHours = currentUsage?.usedHours || 0;
+        if (currentUsedHours + totalHours > limits.maxHours) {
+          res.status(400).json({
+            error: `Special leave limit exceeded. Maximum ${limits.maxHours} hours allowed for ${specialLeaveType}`,
+          });
+          return;
+        }
+      }
+
+      // Check regular leave balance
+      if (leaveType === LeaveType.REGULAR) {
+        const currentYear = startDate.getFullYear();
+        const leaveBalance = await prisma.leaveBalance.findUnique({
+          where: { employeeId_year: { employeeId, year: currentYear } },
+        });
+
+        if (!leaveBalance) {
+          res.status(400).json({ error: 'Leave balance not found for current year' });
+          return;
+        }
+
+        // Calculate current used hours from approved leaves
+        const approvedLeaves = await prisma.leave.findMany({
+          where: {
+            employeeId,
+            status: LeaveStatus.APPROVED,
+            leaveType: LeaveType.REGULAR,
+            startOfLeave: {
+              gte: new Date(currentYear, 0, 1),
+              lt: new Date(currentYear + 1, 0, 1),
+            },
+          },
+        });
+
+        const currentUsedHours = approvedLeaves.reduce(
+          (total: number, leave: any) => total + leave.totalHours,
+          0
+        );
+
+        if (currentUsedHours + totalHours > leaveBalance.totalHours) {
+          res.status(400).json({
+            error: 'Insufficient leave balance',
+            details: {
+              requested: totalHours,
+              available: leaveBalance.totalHours - currentUsedHours,
+              total: leaveBalance.totalHours,
+            },
+          });
+          return;
+        }
+      }
+
+      // Create the leave
       const leave = await prisma.leave.create({
         data: {
           leaveLabel,
           employeeId,
           startOfLeave: startDate,
           endOfLeave: endDate,
-          approverId: employee?.managerId || null,
+          approverId: employee.managerId || null,
+          leaveType,
+          specialLeaveType,
+          totalHours,
         },
         include: {
           employee: {
@@ -130,7 +229,14 @@ export class LeaveController {
           },
         },
       });
-      res.status(201).json(leave);
+
+      // Return warnings if any
+      const response: any = { leave };
+      if (validation.warnings.length > 0) {
+        response.warnings = validation.warnings;
+      }
+
+      res.status(201).json(response);
     } catch (err) {
       console.error('Error creating leave:', err);
       res.status(500).json({ error: 'Failed to create leave' });
@@ -167,6 +273,7 @@ export class LeaveController {
         return;
       }
 
+      // Update the leave status
       const updatedLeave = await prisma.leave.update({
         where: { leaveId },
         data: {
@@ -182,6 +289,54 @@ export class LeaveController {
           },
         },
       });
+
+      // If approved, update special leave usage tracking
+      if (
+        status === LeaveStatus.APPROVED &&
+        leave.leaveType === LeaveType.SPECIAL &&
+        leave.specialLeaveType
+      ) {
+        const currentYear = leave.startOfLeave.getFullYear();
+        const employee = await prisma.employee.findUnique({
+          where: { employeeId: leave.employeeId },
+          select: { contractHours: true },
+        });
+
+        if (employee) {
+          const limits = LeaveBusinessRulesService.getSpecialLeaveLimit(
+            leave.specialLeaveType,
+            employee.contractHours
+          );
+
+          // Update or create special leave usage record
+          await prisma.specialLeaveUsage.upsert({
+            where: {
+              employeeId_year_specialLeaveType: {
+                employeeId: leave.employeeId,
+                year: currentYear,
+                specialLeaveType: leave.specialLeaveType,
+              },
+            },
+            update: {
+              usedHours: {
+                increment: leave.totalHours,
+              },
+              usedDays: {
+                increment: Math.ceil(leave.totalHours / 8),
+              },
+            },
+            create: {
+              employeeId: leave.employeeId,
+              year: currentYear,
+              specialLeaveType: leave.specialLeaveType,
+              usedHours: leave.totalHours,
+              usedDays: Math.ceil(leave.totalHours / 8),
+              maxHours: limits.maxHours,
+              maxDays: limits.maxDays,
+            },
+          });
+        }
+      }
 
       res.json(updatedLeave);
     } catch (err) {
@@ -228,6 +383,53 @@ export class LeaveController {
     } catch (err) {
       console.error('Error deleting leave:', err);
       res.status(500).json({ error: 'Failed to delete leave' });
+    }
+  }
+
+  static async getSpecialLeaveUsage(req: Request, res: Response): Promise<void> {
+    try {
+      const { employeeId } = req.params;
+      const year = parseInt(req.query['year'] as string) || new Date().getFullYear();
+
+      const usage = await prisma.specialLeaveUsage.findMany({
+        where: {
+          employeeId,
+          year,
+        },
+      });
+
+      // Get employee contract hours for calculating limits
+      const employee = await prisma.employee.findUnique({
+        where: { employeeId },
+        select: { contractHours: true },
+      });
+
+      if (!employee) {
+        res.status(404).json({ error: 'Employee not found' });
+        return;
+      }
+
+      // Build complete usage information including unused types
+      const allSpecialLeaveTypes = Object.values(SpecialLeaveType);
+      const completeUsage = allSpecialLeaveTypes.map((type) => {
+        const existing = usage.find((u: any) => u.specialLeaveType === type);
+        const limits = LeaveBusinessRulesService.getSpecialLeaveLimit(type, employee.contractHours);
+
+        return {
+          specialLeaveType: type,
+          usedDays: existing?.usedDays || 0,
+          usedHours: existing?.usedHours || 0,
+          maxDays: limits.maxDays,
+          maxHours: limits.maxHours,
+          remainingDays: limits.maxDays - (existing?.usedDays || 0),
+          remainingHours: limits.maxHours - (existing?.usedHours || 0),
+        };
+      });
+
+      res.json(completeUsage);
+    } catch (err) {
+      console.error('Error fetching special leave usage:', err);
+      res.status(500).json({ error: 'Failed to fetch special leave usage' });
     }
   }
 }

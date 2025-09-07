@@ -1,0 +1,121 @@
+<div class="bg-white p-8 rounded-lg shadow-sm max-w-2xl">
+    <h2 class="text-2xl font-semibold mb-6 text-gray-800">Request New Leave</h2>
+
+    <form (ngSubmit)="submitLeave()" #leaveForm="ngForm">
+        <div class="mb-4">
+            <label for="leaveType" class="block mb-2 font-medium text-gray-700">Leave Type:</label>
+            <select id="leaveType" name="leaveType" [(ngModel)]="leaveRequest.leaveType" required
+                (change)="onLeaveTypeChange()"
+                class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-600 bg-white text-base">
+                <option value="">Select leave type</option>
+                <option [value]="LeaveType.REGULAR">Regular Leave</option>
+                <option [value]="LeaveType.SPECIAL">Special Leave</option>
+            </select>
+        </div>
+
+        @if (leaveRequest.leaveType === LeaveType.SPECIAL) {
+        <div class="mb-4">
+            <label for="specialLeaveType" class="block mb-2 font-medium text-gray-700">Special Leave Type:</label>
+            <select id="specialLeaveType" name="specialLeaveType" [(ngModel)]="leaveRequest.specialLeaveType" required
+                class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-600 bg-white text-base">
+                <option value="">Select special leave type</option>
+                <option [value]="SpecialLeaveType.MOVING">Moving (1 day/year)</option>
+                <option [value]="SpecialLeaveType.WEDDING">Wedding/Partnership (1 day)</option>
+                <option [value]="SpecialLeaveType.CHILD_BIRTH">Child Birth (max 5 days)</option>
+                <option [value]="SpecialLeaveType.PARENTAL_CARE">
+                    Parental Care (max 10x contract hours)
+                </option>
+            </select>
+        </div>
+        }
+
+        <div class="mb-4">
+            <label for="leaveLabel" class="block mb-2 font-medium text-gray-700">Leave Description:</label>
+            <input type="text" id="leaveLabel" name="leaveLabel" [(ngModel)]="leaveRequest.leaveLabel"
+                placeholder="e.g., Summer vacation, Doctor appointment" required #labelInput="ngModel"
+                class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-600 text-base" />
+            @if (labelInput.invalid && labelInput.touched) {
+            <div class="text-red-600 text-sm mt-2">Leave description is required</div>
+            }
+        </div>
+
+        <div class="mb-4">
+            <label for="startDate" class="block mb-2 font-medium text-gray-700">Start Date & Time:</label>
+            <input type="datetime-local" id="startDate" name="startDate" [(ngModel)]="leaveRequest.startOfLeave"
+                required #startInput="ngModel"
+                class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-600 text-base" />
+            @if (startInput.invalid && startInput.touched) {
+            <div class="text-red-600 text-sm mt-2">Start date is required</div>
+            }
+        </div>
+
+        <div class="mb-4">
+            <label for="endDate" class="block mb-2 font-medium text-gray-700">End Date & Time:</label>
+            <input type="datetime-local" id="endDate" name="endDate" [(ngModel)]="leaveRequest.endOfLeave" required
+                #endInput="ngModel"
+                class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-600 text-base" />
+            @if (endInput.invalid && endInput.touched) {
+            <div class="text-red-600 text-sm mt-2">End date is required</div>
+            }
+        </div>
+
+        <div class="flex gap-4 mt-8">
+            <button type="submit" [disabled]="!leaveForm.valid || isSubmitting()"
+                class="bg-blue-600 text-white border-0 px-6 py-3 rounded cursor-pointer text-base hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                {{ isSubmitting() ? 'Submitting...' : 'Submit Request' }}
+            </button>
+            <button type="button" (click)="resetForm()"
+                class="bg-gray-600 text-white border-0 px-6 py-3 rounded cursor-pointer text-base hover:bg-gray-700">
+                Reset
+            </button>
+        </div>
+
+        @if (errorMessage()) {
+        <div class="text-red-600 text-sm mt-2">
+            {{ errorMessage() }}
+        </div>
+        } @if (successMessage()) {
+        <div class="text-green-600 text-sm mt-2">
+            {{ successMessage() }}
+        </div>
+        }
+    </form>
+
+    <div class="mt-8 p-4 bg-gray-50 rounded">
+        <h3 class="mt-0 text-gray-600 text-lg font-medium mb-4">Important Information</h3>
+        @if (leaveRequest.leaveType === LeaveType.REGULAR) {
+        <div>
+            <h4 class="text-gray-700 font-medium mb-2">Regular Leave Rules:</h4>
+            <ul class="m-0 pl-6 text-gray-600">
+                <li class="mb-2">Leave requests must be submitted in advance</li>
+                <li class="mb-2">Leaves cannot overlap with existing approved leaves</li>
+                <li class="mb-2">Must be scheduled during working hours (9:00-17:00)</li>
+                <li class="mb-2">Cannot be scheduled on weekends or public holidays</li>
+                <li class="mb-2">All leave requests require manager approval</li>
+                <li class="mb-2">You can cancel pending requests before the start date</li>
+            </ul>
+        </div>
+        } @if (leaveRequest.leaveType === LeaveType.SPECIAL) {
+        <div>
+            <h4 class="text-gray-700 font-medium mb-2">Special Leave Rules:</h4>
+            <ul class="m-0 pl-6 text-gray-600">
+                <li class="mb-2"><strong>Must be requested 2 weeks in advance</strong></li>
+                <li class="mb-2">Does not reduce your regular leave balance</li>
+                <li class="mb-2">Same working hours and scheduling rules as regular leave</li>
+                <li class="mb-2">Limited quantities per year/lifetime</li>
+                <li class="mb-2">Requires manager approval</li>
+            </ul>
+
+            <div class="mt-4 p-4 bg-blue-50 rounded border-l-4 border-blue-600">
+                <h4 class="mt-0 text-blue-600 font-medium mb-2">Special Leave Limits:</h4>
+                <ul class="m-0 pl-6 text-gray-700">
+                    <li class="mb-2"><strong>Moving:</strong> 1 day per year</li>
+                    <li class="mb-2"><strong>Wedding/Partnership:</strong> 1 day (lifetime)</li>
+                    <li class="mb-2"><strong>Child Birth:</strong> Maximum 5 days total</li>
+                    <li class="mb-2"><strong>Parental Care:</strong> Maximum 10x your contract hours</li>
+                </ul>
+            </div>
+        </div>
+        }
+    </div>
+</div>

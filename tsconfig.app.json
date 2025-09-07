@@ -13,7 +13,8 @@
       "$environments/*": ["src/environments/*"],
       "$types/*": ["src/types/*"],
       "$services/*": ["src/app/services/*"],
-      "$components/*": ["src/app/components/*"]
+      "$components/*": ["src/app/components/*"],
+      "$prisma/*": ["generated/prisma/*"]
     }
   },
   "include": ["src/**/*.ts"],

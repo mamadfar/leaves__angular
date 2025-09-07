@@ -8,24 +8,28 @@ import { ICreateLeaveRequest, ILeave } from '$types/Leave.type';
 })
 export class LeaveService {
   private _http = inject(HttpClient);
+  private readonly _apiUrl = '/api';
 
   getEmployeeLeaves(employeeId: string): Observable<ILeave[]> {
-    return this._http.get<ILeave[]>(`/api/employees/${employeeId}/leaves`);
+    return this._http.get<ILeave[]>(`${this._apiUrl}/employees/${employeeId}/leaves`);
   }
 
   getManagerLeaves(managerId: string): Observable<ILeave[]> {
-    return this._http.get<ILeave[]>(`/api/managers/${managerId}/leaves`);
+    return this._http.get<ILeave[]>(`${this._apiUrl}/managers/${managerId}/leaves`);
   }
 
   createLeave(leave: ICreateLeaveRequest): Observable<ILeave> {
-    return this._http.post<ILeave>('/api/leaves', leave);
+    return this._http.post<ILeave>(`${this._apiUrl}/leaves`, leave);
   }
 
   updateLeaveStatus(leaveId: string, status: string, approverId: string): Observable<ILeave> {
-    return this._http.patch<ILeave>(`/api/leaves/${leaveId}/status`, { status, approverId });
+    return this._http.patch<ILeave>(`${this._apiUrl}/leaves/${leaveId}/status`, {
+      status,
+      approverId,
+    });
   }
 
   deleteLeave(leaveId: string, employeeId: string): Observable<void> {
-    return this._http.delete<void>(`/api/leaves/${leaveId}`, { body: { employeeId } });
+    return this._http.delete<void>(`${this._apiUrl}/leaves/${leaveId}`, { body: { employeeId } });
   }
 }

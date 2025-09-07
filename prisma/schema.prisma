@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider     = "prisma-client"
   output       = "../generated/prisma"
@@ -25,25 +19,29 @@ model Employee {
   updatedAt     DateTime @updatedAt
 
   //* Relations
-  manager        Employee?     @relation("ManagerEmployee", fields: [managerId], references: [employeeId])
-  subordinates   Employee[]    @relation("ManagerEmployee")
-  leaves         Leave[]
-  approvedLeaves Leave[]       @relation("ApproverLeaves")
-  LeaveBalance   LeaveBalance?
+  manager            Employee?           @relation("ManagerEmployee", fields: [managerId], references: [employeeId])
+  subordinates       Employee[]          @relation("ManagerEmployee")
+  leaves             Leave[]
+  approvedLeaves     Leave[]             @relation("ApproverLeaves")
+  LeaveBalance       LeaveBalance?
+  specialLeaveUsages SpecialLeaveUsage[]
 
   @@map("employees")
 }
 
 model Leave {
-  leaveId      String      @id @default(uuid())
-  leaveLabel   String //* e.g., "Annual Leave", "Sick Leave"
-  employeeId   String //* FK to Employee
-  startOfLeave DateTime
-  endOfLeave   DateTime
-  approverId   String? //* FK to
-  status       LeaveStatus @default(REQUESTED)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  leaveId          String            @id @default(uuid())
+  leaveLabel       String //* e.g., "Annual Leave", "Sick Leave"
+  employeeId       String //* FK to Employee
+  startOfLeave     DateTime
+  endOfLeave       DateTime
+  approverId       String? //* FK to approver
+  status           LeaveStatus       @default(REQUESTED)
+  leaveType        LeaveType         @default(REGULAR) //* Regular or Special leave
+  specialLeaveType SpecialLeaveType? //* Type of special leave if applicable
+  totalHours       Float             @default(0) //* Total hours for this leave
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   //* Relations
   employee Employee  @relation(fields: [employeeId], references: [employeeId])
@@ -70,10 +68,41 @@ model LeaveBalance {
   @@map("leave_balances")
 }
 
+model SpecialLeaveUsage {
+  id               Int              @id @default(autoincrement())
+  employeeId       String //* FK to Employee
+  year             Int
+  specialLeaveType SpecialLeaveType
+  usedDays         Int              @default(0)
+  usedHours        Int              @default(0)
+  maxDays          Int              @default(0) //* Maximum allowed for this type
+  maxHours         Int              @default(0) //* Maximum allowed for this type
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  //* Relations
+  employee Employee @relation(fields: [employeeId], references: [employeeId])
+
+  @@unique([employeeId, year, specialLeaveType])
+  @@map("special_leave_usage")
+}
+
 enum LeaveStatus {
   REQUESTED
   APPROVED
   REJECTED
   CANCELLED
   CLOSED
+}
+
+enum LeaveType {
+  REGULAR
+  SPECIAL
+}
+
+enum SpecialLeaveType {
+  MOVING //? 1 day for moving to a new house (once per year)
+  WEDDING //? 1 day for wedding or partner registration
+  CHILD_BIRTH //? Birth of a child, max 5 days total
+  PARENTAL_CARE //? Parental care, max 10x contract hours
 }

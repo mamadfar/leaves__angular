@@ -1,4 +1,9 @@
-import { PrismaClient } from '../generated/prisma';
+import { PrismaClient, LeaveType, SpecialLeaveType } from '../generated/prisma/client';
+
+//* Set the database URL if not already set
+if (!process.env['DATABASE_URL']) {
+  process.env['DATABASE_URL'] = 'file:./dev.db';
+}
 
 const prisma = new PrismaClient();
 
@@ -75,25 +80,60 @@ async function main() {
       });
     }
 
-    //* Create sample leaves
+    //* Create sample leaves with proper totalHours calculation
+    const calculateWorkingHours = (startDate: Date, endDate: Date): number => {
+      const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays * 8; // 8 hours per day
+    };
+
+    const summerVacationStart = new Date('2024-07-01T09:00:00Z');
+    const summerVacationEnd = new Date('2024-07-15T17:00:00Z');
+
     await prisma.leave.create({
       data: {
         leaveLabel: 'Summer vacation',
         employeeId: 'K012345',
-        startOfLeave: new Date('2024-07-01T08:00:00Z'),
-        endOfLeave: new Date('2024-07-15T17:00:00Z'),
+        startOfLeave: summerVacationStart,
+        endOfLeave: summerVacationEnd,
         approverId: 'K000001',
         status: 'APPROVED',
+        leaveType: LeaveType.REGULAR,
+        totalHours: calculateWorkingHours(summerVacationStart, summerVacationEnd),
       },
     });
+
+    const christmasStart = new Date('2024-12-23T09:00:00Z');
+    const christmasEnd = new Date('2024-12-30T17:00:00Z');
+
     await prisma.leave.create({
       data: {
         leaveLabel: 'Christmas break',
         employeeId: 'K012346',
-        startOfLeave: new Date('2024-12-23T08:00:00Z'),
-        endOfLeave: new Date('2024-12-30T17:00:00Z'),
+        startOfLeave: christmasStart,
+        endOfLeave: christmasEnd,
         approverId: 'K000001',
         status: 'REQUESTED',
+        leaveType: LeaveType.REGULAR,
+        totalHours: calculateWorkingHours(christmasStart, christmasEnd),
+      },
+    });
+
+    // Add a special leave example
+    const movingStart = new Date('2024-11-15T09:00:00Z');
+    const movingEnd = new Date('2024-11-15T17:00:00Z');
+
+    await prisma.leave.create({
+      data: {
+        leaveLabel: 'Moving day',
+        employeeId: 'K012347',
+        startOfLeave: movingStart,
+        endOfLeave: movingEnd,
+        approverId: 'K000002',
+        status: 'APPROVED',
+        leaveType: LeaveType.SPECIAL,
+        specialLeaveType: SpecialLeaveType.MOVING,
+        totalHours: 8,
       },
     });
 

@@ -45,4 +45,4 @@ Thumbs.db
 *.vscode
 *.code-workspace
 *.idea
-/generated/prisma
+/generated

@@ -1,4 +1,7 @@
-// Ensure __dirname is defined for ESM SSR evaluation (Vite) before importing modules that rely on it.
+import { config } from 'dotenv';
+config();
+
+//? Ensure __dirname is defined for ESM SSR evaluation (Vite) before importing modules that rely on it.
 import './shims/dirname-shim';
 
 import {

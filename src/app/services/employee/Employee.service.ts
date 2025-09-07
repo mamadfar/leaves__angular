@@ -8,15 +8,15 @@ import { IEmployee } from '$types/Employee.type';
 })
 export class EmployeeService {
   private _http = inject(HttpClient);
-  private _baseUrl = '/api/employees';
+  private readonly _apiUrl = '/api/employees';
 
   getEmployees(): Observable<IEmployee[]> {
-    return this._http.get<IEmployee[]>(this._baseUrl);
+    return this._http.get<IEmployee[]>(this._apiUrl);
   }
   getEmployee(employeeId: string): Observable<IEmployee> {
-    return this._http.get<IEmployee>(`${this._baseUrl}/${employeeId}`);
+    return this._http.get<IEmployee>(`${this._apiUrl}/${employeeId}`);
   }
   getSubordinates(employeeId: string): Observable<IEmployee[]> {
-    return this._http.get<IEmployee[]>(`${this._baseUrl}/${employeeId}/subordinates`);
+    return this._http.get<IEmployee[]>(`${this._apiUrl}/${employeeId}/subordinates`);
   }
 }

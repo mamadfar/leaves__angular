@@ -4,6 +4,7 @@ import { LeaveController } from '../controllers/Leave.controller';
 const router = Router();
 
 router.get('/employees/:employeeId/leaves', LeaveController.getEmployeeLeaves);
+router.get('/employees/:employeeId/special-leave-usage', LeaveController.getSpecialLeaveUsage);
 router.get('/managers/:managerId/leaves', LeaveController.getManagerLeaves);
 router.post('/leaves', LeaveController.createLeave);
 router.patch('/leaves/:leaveId/status', LeaveController.updateLeaveStatus);

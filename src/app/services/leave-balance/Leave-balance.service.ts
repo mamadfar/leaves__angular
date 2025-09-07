@@ -7,10 +7,13 @@ import { ILeaveBalance } from '$types/LeaveBalance.type';
   providedIn: 'root',
 })
 export class LeaveBalanceService {
-  private http = inject(HttpClient);
+  private _http = inject(HttpClient);
+  private readonly _apiUrl = '/api';
 
   getEmployeeBalance(employeeId: string, year?: number): Observable<ILeaveBalance> {
     const yearParam = year ? `?year=${year}` : '';
-    return this.http.get<ILeaveBalance>(`/api/employees/${employeeId}/balance${yearParam}`);
+    return this._http.get<ILeaveBalance>(
+      `${this._apiUrl}/employees/${employeeId}/balance${yearParam}`
+    );
   }
 }

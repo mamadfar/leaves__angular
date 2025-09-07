@@ -40,6 +40,7 @@
     "@tailwindcss/postcss": "^4.1.13",
     "@types/sqlite3": "^5.1.0",
     "axios": "^1.11.0",
+    "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "postcss": "^8.5.6",
     "rxjs": "~7.8.0",
@@ -51,6 +52,7 @@
     "@angular/build": "^20.2.2",
     "@angular/cli": "^20.2.2",
     "@angular/compiler-cli": "^20.2.0",
+    "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.1",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^20.19.13",
@@ -61,6 +63,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "prisma": "^6.15.0",
+    "tsx": "^4.20.5",
     "typescript": "~5.9.2"
   }
 }
