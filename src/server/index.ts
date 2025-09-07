@@ -25,13 +25,40 @@ const angularApp = new AngularNodeAppEngine();
 //* Middleware for parsing JSON
 app.use(express.json());
 
-//* Corss middleware
+//* Security headers middleware
+app.use((req, res, next) => {
+  // Content Security Policy
+  res.header(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+      "style-src 'self' 'unsafe-inline'; " +
+      "img-src 'self' data: https:; " +
+      "font-src 'self' data:; " +
+      "connect-src 'self' http://localhost:* ws://localhost:*; " + //? Should add production URL here
+      // "connect-src 'self' https://your-production-url.com ws://your-production-url.com; " +
+      "frame-ancestors 'none'; " +
+      "base-uri 'self'; " +
+      "form-action 'self'",
+  );
+
+  // Additional security headers
+  res.header('X-Content-Type-Options', 'nosniff');
+  res.header('X-Frame-Options', 'DENY');
+  res.header('X-XSS-Protection', '1; mode=block');
+  res.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+
+  next();
+});
+
+//* CORS middleware
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   res.header(
     'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, Content-Length, X-Requested-With'
+    'Content-Type, Authorization, Content-Length, X-Requested-With',
   );
 
   if (req.method === 'OPTIONS') {
@@ -54,7 +81,7 @@ app.use(
     maxAge: '1y',
     index: false,
     redirect: false,
-  })
+  }),
 );
 
 /**

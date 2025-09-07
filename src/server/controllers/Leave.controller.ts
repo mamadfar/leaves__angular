@@ -116,13 +116,13 @@ export class LeaveController {
           employeeId,
           OR: [
             {
-              AND: [{ startOfLeave: { lte: startDate } }, { endOfLeave: { gte: startDate } }],
+              AND: [{ startOfLeave: { lte: startDate } }, { endOfLeave: { gte: startDate } }], //* e.g., 1-5 and new 3-7
             },
             {
-              AND: [{ startOfLeave: { lte: endDate } }, { endOfLeave: { gte: endDate } }],
+              AND: [{ startOfLeave: { lte: endDate } }, { endOfLeave: { gte: endDate } }], //* e.g., 1-5 and new 0-3
             },
             {
-              AND: [{ startOfLeave: { gte: startDate } }, { endOfLeave: { lte: endDate } }],
+              AND: [{ startOfLeave: { gte: startDate } }, { endOfLeave: { lte: endDate } }], //* e.g., 1-5 and new 0-7
             },
           ],
           status: { notIn: [LeaveStatus.REJECTED, LeaveStatus.CANCELLED, LeaveStatus.CLOSED] },
@@ -142,7 +142,7 @@ export class LeaveController {
         const currentYear = startDate.getFullYear();
         const limits = LeaveBusinessRulesService.getSpecialLeaveLimit(
           specialLeaveType,
-          employee.contractHours
+          employee.contractHours,
         );
 
         // Get current usage
@@ -192,7 +192,7 @@ export class LeaveController {
 
         const currentUsedHours = approvedLeaves.reduce(
           (total: number, leave: any) => total + leave.totalHours,
-          0
+          0,
         );
 
         if (currentUsedHours + totalHours > leaveBalance.totalHours) {
@@ -305,7 +305,7 @@ export class LeaveController {
         if (employee) {
           const limits = LeaveBusinessRulesService.getSpecialLeaveLimit(
             leave.specialLeaveType,
-            employee.contractHours
+            employee.contractHours,
           );
 
           // Update or create special leave usage record

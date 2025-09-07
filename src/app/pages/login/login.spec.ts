@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { of } from 'rxjs';
 import { Login } from './login';
 import { AuthService } from '../../services/auth/Auth.service';
@@ -18,6 +19,7 @@ describe('Login', () => {
     await TestBed.configureTestingModule({
       imports: [Login, FormsModule],
       providers: [
+        provideZonelessChangeDetection(),
         { provide: AuthService, useValue: authSpy },
         { provide: Router, useValue: routerSpy },
       ],

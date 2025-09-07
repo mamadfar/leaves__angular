@@ -36,3 +36,18 @@ export interface ISpecialLeaveUsage {
   maxDays: number;
   maxHours: number;
 }
+
+export interface ILeaveRequest {
+  startOfLeave: Date;
+  endOfLeave: Date;
+  leaveType: LeaveType;
+  specialLeaveType?: SpecialLeaveType;
+  employeeId: string;
+  contractHours: number;
+}
+
+export interface IValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+}

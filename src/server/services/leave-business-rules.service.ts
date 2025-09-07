@@ -1,19 +1,5 @@
+import { ILeaveRequest, IValidationResult } from '$types/Leave.type';
 import { LeaveType, SpecialLeaveType } from '../../../generated/prisma/enums';
-
-export interface LeaveRequest {
-  startOfLeave: Date;
-  endOfLeave: Date;
-  leaveType: LeaveType;
-  specialLeaveType?: SpecialLeaveType;
-  employeeId: string;
-  contractHours: number;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-}
 
 export class LeaveBusinessRulesService {
   /**
@@ -86,7 +72,7 @@ export class LeaveBusinessRulesService {
    */
   static getSpecialLeaveLimit(
     specialLeaveType: SpecialLeaveType,
-    contractHours: number
+    contractHours: number,
   ): { maxDays: number; maxHours: number } {
     switch (specialLeaveType) {
       case SpecialLeaveType.MOVING:
@@ -106,12 +92,12 @@ export class LeaveBusinessRulesService {
   /**
    * Validates a leave request against business rules
    */
-  static validateLeaveRequest(request: LeaveRequest): ValidationResult {
+  static validateLeaveRequest(request: ILeaveRequest): IValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
 
     // Basic date validation
-    if (request.startOfLeave >= request.endOfLeave) {
+    if (request.endOfLeave <= request.startOfLeave) {
       errors.push('End date must be after start date');
     }
 

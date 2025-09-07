@@ -1,11 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { AuthService } from './Auth.service';
 
 describe('AuthService', () => {
   let service: AuthService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
     service = TestBed.inject(AuthService);
   });
 
@@ -14,10 +17,10 @@ describe('AuthService', () => {
   });
 
   it('should login with valid employee ID', () => {
-    service.login('K123456').subscribe((user) => {
+    service.login('K012345').subscribe((user) => {
       expect(user).toBeTruthy();
-      expect(user?.employeeId).toBe('K123456');
-      expect(user?.name).toBe('John Doe');
+      expect(user?.employeeId).toBe('K012345');
+      expect(user?.name).toBe('Mohammad Farhadi');
     });
   });
 
@@ -28,7 +31,7 @@ describe('AuthService', () => {
   });
 
   it('should logout correctly', () => {
-    service.login('K123456').subscribe(() => {
+    service.login('K012345').subscribe(() => {
       service.logout();
       expect(service.isAuthenticated()).toBeFalse();
       expect(service.getCurrentUser()).toBeNull();
@@ -36,11 +39,11 @@ describe('AuthService', () => {
   });
 
   it('should check manager status correctly', () => {
-    service.login('K789012').subscribe(() => {
+    service.login('K000001').subscribe(() => {
       expect(service.isManager()).toBeTrue();
     });
 
-    service.login('K123456').subscribe(() => {
+    service.login('K012345').subscribe(() => {
       expect(service.isManager()).toBeFalse();
     });
   });

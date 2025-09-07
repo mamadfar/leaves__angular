@@ -2,10 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { EmployeeService } from './Employee.service';
+import { SpecialLeaveService } from './special-leave.service';
 
-describe('EmployeeService', () => {
-  let service: EmployeeService;
+describe('SpecialLeaveService', () => {
+  let service: SpecialLeaveService;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
@@ -16,7 +16,7 @@ describe('EmployeeService', () => {
         provideHttpClientTesting(),
       ],
     });
-    service = TestBed.inject(EmployeeService);
+    service = TestBed.inject(SpecialLeaveService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
