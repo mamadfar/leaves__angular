@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:coverage": "ng test --watch=false --code-coverage",
-    "test:coverage-check": "ng test --watch=false --code-coverage && node -e \"const fs = require('fs'); console.log('Coverage generated successfully. Manual verification:'); console.log('- Statements: 77.08%'); console.log('- Branches: 73.46%'); console.log('- Functions: 55.4%'); console.log('- Lines: 77.13%'); console.log('Coverage meets threshold of 70%');\"",
+    "test:coverage-check": "ng test --code-coverage --watch=false --browsers=ChromeHeadless",
     "serve:ssr:leaves": "node dist/leaves/server/server.mjs",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",

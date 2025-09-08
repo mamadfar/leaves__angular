@@ -94,6 +94,8 @@
   error messages
 - **Accessibility**: ARIA labels, keyboard navigation, screen reader support
 - **Responsive Design**: Optimize for mobile and tablet devices
+- **Date Picker Enhancement**: Use a more advanced date picker with range
+  selection and disabled dates
 
 ### UI/UX Improvements
 
