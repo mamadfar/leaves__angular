@@ -87,8 +87,8 @@ async function main() {
       return diffDays * 8; // 8 hours per day
     };
 
-    const summerVacationStart = new Date('2024-07-01T09:00:00Z');
-    const summerVacationEnd = new Date('2024-07-15T17:00:00Z');
+    const summerVacationStart = new Date('2025-07-01T09:00:00Z');
+    const summerVacationEnd = new Date('2025-07-15T17:00:00Z');
 
     await prisma.leave.create({
       data: {
@@ -103,8 +103,8 @@ async function main() {
       },
     });
 
-    const christmasStart = new Date('2024-12-23T09:00:00Z');
-    const christmasEnd = new Date('2024-12-30T17:00:00Z');
+    const christmasStart = new Date('2025-12-23T09:00:00Z');
+    const christmasEnd = new Date('2025-12-30T17:00:00Z');
 
     await prisma.leave.create({
       data: {
@@ -120,8 +120,8 @@ async function main() {
     });
 
     // Add a special leave example
-    const movingStart = new Date('2024-11-15T09:00:00Z');
-    const movingEnd = new Date('2024-11-15T17:00:00Z');
+    const movingStart = new Date('2025-11-15T09:00:00Z');
+    const movingEnd = new Date('2025-11-15T17:00:00Z');
 
     await prisma.leave.create({
       data: {

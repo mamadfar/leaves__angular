@@ -3,13 +3,13 @@ import { Router } from '@angular/router';
 import { AuthService } from '$services/auth/Auth.service';
 
 export const authGuard = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+  const _authService = inject(AuthService);
+  const _router = inject(Router);
 
-  if (authService.isAuthenticated()) {
+  if (_authService.isAuthenticated()) {
     return true;
   } else {
-    router.navigate(['/login']);
+    _router.navigate(['/login']);
     return false;
   }
 };

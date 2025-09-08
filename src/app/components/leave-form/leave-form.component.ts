@@ -31,7 +31,7 @@ export class LeaveFormComponent {
   };
 
   isSubmitting = signal(false);
-  errorMessage = signal('');
+  errorMessage = signal<string | string[]>('');
   successMessage = signal('');
 
   onLeaveTypeChange(): void {
@@ -63,8 +63,11 @@ export class LeaveFormComponent {
         this.resetForm();
       },
       error: (error) => {
+        console.log(error);
         this.isSubmitting.set(false);
-        this.errorMessage.set(error.message || 'Failed to create leave request');
+        this.errorMessage.set(
+          error.error ? error.error.details : error.message || 'Failed to create leave request',
+        );
       },
     });
   }

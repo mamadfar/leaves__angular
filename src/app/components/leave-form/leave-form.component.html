@@ -71,8 +71,20 @@
         </div>
 
         @if (errorMessage()) {
-        <div class="text-red-600 text-sm mt-2">
-            {{ errorMessage() }}
+        <div>
+            @if (typeof errorMessage() === 'object') {
+            <div>
+                @for (error of errorMessage(); track error) {
+                <div class="text-red-600 text-sm mt-2">
+                    {{ error }}
+                </div>
+                }
+            </div>
+            } @else {
+            <div class="text-red-600 text-sm mt-2">
+                {{ errorMessage() }}
+            </div>
+            }
         </div>
         } @if (successMessage()) {
         <div class="text-green-600 text-sm mt-2">

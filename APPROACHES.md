@@ -115,6 +115,10 @@
   TransferState
 - **Hydration Optimization**: Pass server data to client during hydration to
   avoid duplicate requests
+- **HTML5 & Semantic HTML**: Use semantic HTML elements for better accessibility
+  and SEO
+- **PWA Support**: Implement Progressive Web App features for offline access and
+  improved performance
 
 ### Code Quality
 
